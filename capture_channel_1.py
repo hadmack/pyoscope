@@ -17,7 +17,7 @@ test.write(":WAV:POIN:MODE NOR")
  
 test.write(":WAV:DATA? CHAN1")
 rawdata = test.read(9000)
-data = numpy.frombuffer(rawdata, 'B')
+data = numpy.frombuffer(rawdata, dtype='B', offset=10)
  
 # Get the voltage scale
 test.write(":CHAN1:SCAL?")
