@@ -9,6 +9,10 @@ class usbtmc:
 
         # TODO: Test that the file opened
 
+	def __del__(self):
+		"""Clean up and release device"""
+		self.close()
+
     def write(self, command):
         os.write(self.FILE, command);
 
@@ -22,6 +26,10 @@ class usbtmc:
     def sendReset(self):
         self.write("*RST")
 
+    def close(self):
+        """Close interface to instrument and release file descriptor"""
+        os.close(self.FILE)
+
 
 class RigolScope:
     """Class to control a Rigol DS1000 series oscilloscope"""
@@ -31,6 +39,11 @@ class RigolScope:
         self.name = self.meas.getName()
 
         print self.name
+
+    def __del__(self):
+        """Clean up and release device"""
+        pass
+        # TODO release scope panel controls
 
     def write(self, command):
         """Send an arbitrary command directly to the scope"""
@@ -43,4 +56,21 @@ class RigolScope:
     def reset(self):
         """Reset the instrument"""
         self.meas.sendReset()
+	
+    def stop(self):
+        """Stop acquisition"""
+        self.meas.write(":STOP")
+
+    def unlock(self):
+        """Unlock scope panel keys"""
+        self.meas.write(":KEY:LOCK DIS")
+
+    def query(self, command):
+        """Write command then read the response and return"""
+        self.meas.write(command)
+        return self.read(300)
+
+		
+
+
 

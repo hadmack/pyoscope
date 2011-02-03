@@ -1,0 +1,6 @@
+TODO
+
+- add error checking for device connection
+- add read timeout
+- have RigolScope inherit from usbtmc
+
