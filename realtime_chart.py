@@ -21,7 +21,7 @@ def getChannelData(channel):
 
     test.write(":WAV:DATA? " + channelName)
     rawdata = test.read(9000)
-    data = numpy.frombuffer(rawdata, 'B')
+    data = numpy.frombuffer(rawdata, dtype='B', offset=10)
 
     # Get the voltage scale
     test.write(":" + channelName + ":SCAL?")
