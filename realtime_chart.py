@@ -2,8 +2,7 @@
 import numpy
 import matplotlib.pyplot as plot
 
-import pyusbtmc
-
+from pyusbtmc import RigolScope
 
 """ Example program to plot the Y-T data from Channel 1"""
 
@@ -69,7 +68,7 @@ def getChannelData(channel):
 
 
 # Initialize our scope
-test = instrument.RigolScope("/dev/usbtmc0")
+test = RigolScope("/dev/usbtmc0")
 
 plot.ion()
 

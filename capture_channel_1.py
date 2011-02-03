@@ -2,12 +2,12 @@
 import numpy
 import matplotlib.pyplot as plot
  
-import pyusbtmc.py
+from pyusbtmc import RigolScope
  
 """ Example program to plot the Y-T data from Channel 1"""
  
 # Initialize our scope
-test = instrument.RigolScope("/dev/usbtmc0")
+test = RigolScope("/dev/usbtmc0")
  
 # Stop data acquisition
 test.write(":STOP")
