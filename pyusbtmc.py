@@ -13,7 +13,9 @@ class usbtmc:
             self.FILE = os.open(device, os.O_RDWR)
         except OSError as e:
             print >> sys.stderr, "Error opening device: ", e
-
+            sys.exit(1)
+            # TODO: This should throw an exception back to caller rather than exit
+    
     def write(self, command):
         """Write command directly to the device"""
         try:
@@ -108,16 +110,34 @@ class RigolScope(usbtmc):
            TODO: Return scope parameters in dictionary """
         data = self.readData(chan)
         
-        voltscale  = getVoltScale(chan)
-        voltoffset = getVoltScale(chan)
-        timescale  = getTimeScale()
-        timeoffset = getTimeOffset()
+        voltscale  = self.getVoltScale(chan)
+        voltoffset = self.getVoltScale(chan)
+        timescale  = self.getTimeScale()
+        timeoffset = self.getTimeOffset()
+        
+    def getTimeAxis(self):
+        """Retrieve timescale and offset from the scope and return an array or
+           time points corresponding to the present scope trace
+           Units are seconds by default"""
+        timescale  = self.getTimeScale()
+        timeoffset = self.getTimeOffset()
+        # Now, generate a time axis.  The scope display range is 0-600, with 300 being
+        # time zero.
+        timespan = 300./50*timescale
+        time = numpy.linspace(-timespan,+timespan, 600)
+        return time
     
         
 def main():
     print "# RigolScope Test #"
     scope = RigolScope("/dev/usbtmc0")
     scope.query("*IDN?")
+    print scope.getTimeScale()
+    print scope.getTimeOffset()
+    time = scope.getTimeAxis()
+    print time.size
+    print time[0]
+    print time[-1]
     scope.close()
 		
 if __name__ == "__main__":
