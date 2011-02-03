@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# pyusbtmc.py
 import os
 import sys
 import numpy

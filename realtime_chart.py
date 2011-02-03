@@ -2,7 +2,7 @@
 import numpy
 import matplotlib.pyplot as plot
 
-import instrument
+import pyusbtmc
 
 
 """ Example program to plot the Y-T data from Channel 1"""
