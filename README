@@ -1,3 +1,9 @@
 pyusbtmc
 
 Python library for accessing USBTMC test equipment
+
+Setup USB permissions with udev:
+echo 'ACTION=="add", BUS=="usb", SYSFS{idVendor}=="1ab1", SYSFS{idProduct}=="0588", GROUP:="adm"' > tmpfile
+sudo chown root:root tmpfile
+sudo mv tmpfile /etc/udev/rules.d/10-rigol.rules
+sudo udevadm control --reload-rules
