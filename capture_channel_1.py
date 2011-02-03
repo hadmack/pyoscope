@@ -65,6 +65,7 @@ else:
 # Start data acquisition again, and put the scope back in local mode
 test.write(":RUN")
 test.write(":KEY:FORC")
+test.close()
  
 # Plot the data
 plot.plot(time, data)
@@ -73,3 +74,5 @@ plot.ylabel("Voltage (V)")
 plot.xlabel("Time (" + tUnit + ")")
 plot.xlim(time[0], time[599])
 plot.show()
+
+
