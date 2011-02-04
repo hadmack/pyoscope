@@ -117,7 +117,7 @@ class RigolScope(usbtmc):
         
     def getTimeOffset(self):
         return float(self.query(":TIM:OFFS?", 20))
-    
+        
     def getScaledWaveform(self,chan=1):
         """Read scope and rescale data from axis information
            return data as a tuple (t,y)
@@ -127,8 +127,7 @@ class RigolScope(usbtmc):
         
         voltscale  = self.getVoltScale(chan)
         voltoffset = self.getVoltOffset(chan)
-        print "VScale=%f, VOffset=%f"%(voltscale, voltoffset)
-
+        
         # Walk through the data, and map it to actual voltages
         # First invert the data (ya rly)
         data = 255 - data
@@ -137,8 +136,7 @@ class RigolScope(usbtmc):
         # get the actual voltage.
         data = (data - 130.0 - voltoffset/voltscale*25) / 25 * voltscale
         return data
-
-        
+  
     def getTimeAxis(self):
         """Retrieve timescale and offset from the scope and return an array or
            time points corresponding to the present scope trace
@@ -150,6 +148,21 @@ class RigolScope(usbtmc):
         timespan = 300./50*timescale
         time = numpy.linspace(-timespan,+timespan, 600)
         return time
+        
+    def writeWaveformToFile(self, filename, chan=1):
+        """Write scaled scope data to file"""
+        fd = open(filename, 'w')
+        data = self.getScaledWaveform(chan)
+        time = self.getTimeAxis()
+        self._writeChannelDataToFile(fd, data, time)
+        fd.close()
+    
+    def _writeChannelDataToFile(self, fd, data, time):
+        """Write data and time arrays to file descriptor"""
+        fd.write("# Time\tVoltage\n")
+        for i in range(data.size):
+            fd.write("%f\t%f\n"%(time[i],data[i]))
+        
     
         
 def main():
