@@ -2,6 +2,8 @@ PyUSBtmc is a simple library for interacting with test equipment (primarily Rigo
 
 It was conceived of by Matt Mets in 2010, and is distributed under the MIT License. See LICENSE for a copy of this license.
 
+The PyUSBtmc project is in no way affiliated with Rigol Technologies Inc.
+
 Setup USB permissions for udev
 ------------------------------
 echo 'ACTION=="add", BUS=="usb", SYSFS{idVendor}=="1ab1", SYSFS{idProduct}=="0588", GROUP:="adm"' > tmpfile

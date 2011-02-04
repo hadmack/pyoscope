@@ -120,16 +120,12 @@ class RigolScope(usbtmc):
         return float(self.query(":TIM:OFFS?", 20))
         
     def getScaledWaveform(self,chan=1):
-        """Read scope and rescale data from axis information
-           return data as a tuple (t,y)
-           TODO: Multichannel mode
-           TODO: Return scope parameters in dictionary """
+        """Read scope channel vertical axis and rescale data from axis information
+           Returns a numpy array with voltage scaled scope trace"""
         data = self.readData(chan)
-        
         voltscale  = self.getVoltScale(chan)
         voltoffset = self.getVoltOffset(chan)
         
-        # Walk through the data, and map it to actual voltages
         # First invert the data (ya rly)
         data = 255 - data
         # Now, we know from experimentation that the scope display range is actually
@@ -141,7 +137,8 @@ class RigolScope(usbtmc):
     def getTimeAxis(self):
         """Retrieve timescale and offset from the scope and return an array or
            time points corresponding to the present scope trace
-           Units are seconds by default"""
+           Units are seconds by default
+           Returns a numpy array of time points"""
         timescale  = self.getTimeScale()
         timeoffset = self.getTimeOffset()
         # Now, generate a time axis.  The scope display range is 0-600, with 300 being
@@ -150,26 +147,33 @@ class RigolScope(usbtmc):
         time = numpy.linspace(-timespan,+timespan, 600)
         return time
         
-    def writeWaveformToFile(self, filename, chan=1):
-        """Write scaled scope data to file"""
+    def writeWaveformToFile(self, filename, chans=1):
+        """Write scaled scope data to file
+           Zeros are generated for any unused channel for consistancy in data file"""
         fd = open(filename, 'w')
-        data = self.getScaledWaveform(chan)
         time = self.getTimeAxis()
-        self._writeChannelDataToFile(fd, data, time)
+        data1 = numpy.zeros(time.size)
+        data2 = numpy.zeros(time.size)
+        if chan==1 or chan=='BOTH':
+            data1 = self.getScaledWaveform(1)
+        if chan==2 or chan=='BOTH':
+            data2 = self.getScaledWaveform(2)
+        
+        self._writeChannelDataToFile(fd, data1, data2, time)
         fd.close()
     
-    def _writeChannelDataToFile(self, fd, data, time):
+    def _writeChannelDataToFile(self, fd, data1, data2, time):
         """Write data and time arrays to file descriptor"""
-        fd.write("# Time\tVoltage\n")
+        fd.write("# Time\tChannel 1\tChannel 2\n")
         for i in range(data.size):
-            fd.write("%f\t%f\n"%(time[i],data[i]))
+            fd.write("%f\t%f\t%f\n"%(time[i],data1[i],data2[i]))
         
 def main():
     print "# RigolScope Test #"
     scope = RigolScope("/dev/usbtmc0")
-    scope.stop()
-    print scope.readRawData(1)
-    scope.run()
+    
+    scope.writeWaveformToFile("testdata.txt", 1)
+    
     scope.close()
 		
 if __name__ == "__main__":

@@ -1,3 +1,12 @@
 TODO
 
+   * File dump mode for one or two traces
+   * Test with 1102CD scope (older firmware)
+   * Try firmware upgrade?
+   * Plotting routines (in wxFrame?, direct to EPS/PNG)
+
+Should the RigolScope object hold the most recently acquired data for use by processing routines?  For example the plotting object can be linked to RigolScope object for message passing.
+
+Which RigolScope methods should be part of the public interface and which are private?
+
 
