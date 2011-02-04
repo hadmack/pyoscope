@@ -4,6 +4,7 @@ TODO
    * Test with 1102CD scope (older firmware)
    * Try firmware upgrade?
    * Plotting routines (in wxFrame?, direct to EPS/PNG)
+   * Pad vertical axis in plot so that trace fits well
 
 Should the RigolScope object hold the most recently acquired data for use by processing routines?  For example the plotting object can be linked to RigolScope object for message passing.
 

@@ -58,7 +58,7 @@ class RigolScope(usbtmc):
     def __init__(self, device):
         usbtmc.__init__(self, device)
         self.name = self.getName()
-        print "Connected to: " + self.name
+        print "# Connected to: " + self.name
     
     def stop(self):
         """Stop acquisition"""
@@ -147,32 +147,40 @@ class RigolScope(usbtmc):
         time = numpy.linspace(-timespan,+timespan, 600)
         return time
         
-    def writeWaveformToFile(self, filename, chans=1):
+    def writeWaveformToFile(self, filename, chan=1):
         """Write scaled scope data to file
-           Zeros are generated for any unused channel for consistancy in data file"""
-        fd = open(filename, 'w')
+           Zeros are generated for any unused channel for consistancy in data file
+           A blank filename='' implies stdout"""
+        if filename == "": fd = sys.stdout
+        else: fd = open(filename, 'w')
         time = self.getTimeAxis()
         data1 = numpy.zeros(time.size)
         data2 = numpy.zeros(time.size)
-        if chan==1 or chan=='BOTH':
+        if chan=='BOTH': chan = 3
+        if chan==1 or chan==3:
             data1 = self.getScaledWaveform(1)
-        if chan==2 or chan=='BOTH':
+        if chan==2 or chan==3:
             data2 = self.getScaledWaveform(2)
         
         self._writeChannelDataToFile(fd, data1, data2, time)
         fd.close()
     
     def _writeChannelDataToFile(self, fd, data1, data2, time):
-        """Write data and time arrays to file descriptor"""
+        """Write data and time arrays to file descriptor
+        
+           be carefull that anything written to file that is not data
+           is prefixed with a # as a comment"""
         fd.write("# Time\tChannel 1\tChannel 2\n")
-        for i in range(data.size):
-            fd.write("%f\t%f\t%f\n"%(time[i],data1[i],data2[i]))
+        for i in range(time.size):
+            # time resolution is 1/600 = 0.0017 => 5 sig figs
+            # voltage resolution 1/255 = 0.004 => 4 sig figs
+            fd.write("%1.4e\t%1.3e\t%1.3e\n"%(time[i],data1[i],data2[i]))
         
 def main():
     print "# RigolScope Test #"
     scope = RigolScope("/dev/usbtmc0")
     
-    scope.writeWaveformToFile("testdata.txt", 1)
+    scope.writeWaveformToFile("", 1+2)
     
     scope.close()
 		
