@@ -86,6 +86,21 @@ class RigolScope(usbtmc):
         self.write(command)
         return self.read(9000)
     
+    def getStatus(self):
+        """Get the scope trigger status"""
+        return self.query(':TRIGGER:STATUS?')
+            
+    def setWavePointsMode(self, mode):
+        """Set the waveform point mode
+           mode='NORM' -- 600 points from screen
+           mode='RAW'  -- Return full memory in STOP state
+           mode='MAX'  -- NORM in RUN, RAW in STOP """
+        self.write('WAVEFORM:POINTS:MODE ' + mode)
+        
+    def getWavePointsMode(self):
+        """Return the current waveform point mode"""
+        return self.query('WAVEFORM:POINTS:MODE?')
+                
     def readData(self,chan=1):
         """Read scope channel and return numpy array"""
         rawdata = self.readRawData(chan)
@@ -103,7 +118,7 @@ class RigolScope(usbtmc):
     def getTimeOffset(self):
         return float(self.query(":TIM:OFFS?", 20))
     
-    def getWaveform(self,chan=1):
+    def getScaledWaveform(self,chan=1):
         """Read scope and rescale data from axis information
            return data as a tuple (t,y)
            TODO: Multichannel mode
@@ -111,9 +126,18 @@ class RigolScope(usbtmc):
         data = self.readData(chan)
         
         voltscale  = self.getVoltScale(chan)
-        voltoffset = self.getVoltScale(chan)
-        timescale  = self.getTimeScale()
-        timeoffset = self.getTimeOffset()
+        voltoffset = self.getVoltOffset(chan)
+        print "VScale=%f, VOffset=%f"%(voltscale, voltoffset)
+
+        # Walk through the data, and map it to actual voltages
+        # First invert the data (ya rly)
+        data = 255 - data
+        # Now, we know from experimentation that the scope display range is actually
+        # 30-229.  So shift by 130 - the voltage offset in counts, then scale to
+        # get the actual voltage.
+        data = (data - 130.0 - voltoffset/voltscale*25) / 25 * voltscale
+        return data
+
         
     def getTimeAxis(self):
         """Retrieve timescale and offset from the scope and return an array or
@@ -131,13 +155,9 @@ class RigolScope(usbtmc):
 def main():
     print "# RigolScope Test #"
     scope = RigolScope("/dev/usbtmc0")
-    scope.query("*IDN?")
-    print scope.getTimeScale()
-    print scope.getTimeOffset()
-    time = scope.getTimeAxis()
-    print time.size
-    print time[0]
-    print time[-1]
+    scope.stop()
+    print scope.readRawData(1)
+    scope.run()
     scope.close()
 		
 if __name__ == "__main__":

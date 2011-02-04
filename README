@@ -7,3 +7,8 @@ echo 'ACTION=="add", BUS=="usb", SYSFS{idVendor}=="1ab1", SYSFS{idProduct}=="058
 sudo chown root:root tmpfile
 sudo mv tmpfile /etc/udev/rules.d/10-rigol.rules
 sudo udevadm control --reload-rules
+
+
+NOTES:
+On my DS1102E the WAVE:POINT:MODE options seem to have no effect
+
