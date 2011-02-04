@@ -1,12 +1,13 @@
 #!/usr/bin/python
-# pyusbtmc.py
+#
+# PyUSBtmc
+#
 import os
 import sys
 import numpy
 
 class usbtmc:
     """Simple implementation of a USBTMC device driver, in the style of visa.h"""
-
     def __init__(self, device):
         self.device = device
         try:
@@ -162,8 +163,6 @@ class RigolScope(usbtmc):
         fd.write("# Time\tVoltage\n")
         for i in range(data.size):
             fd.write("%f\t%f\n"%(time[i],data[i]))
-        
-    
         
 def main():
     print "# RigolScope Test #"

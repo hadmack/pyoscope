@@ -1,14 +1,15 @@
-pyusbtmc
+PyUSBtmc is a simple library for interacting with test equipment (primarily Rigol oscilloscopes).
 
-Python library for accessing USBTMC test equipment
+It was conceived of by Matt Mets in 2010, and is distributed under the MIT License. See LICENSE for a copy of this license.
 
-Setup USB permissions with udev:
+Setup USB permissions for udev
+------------------------------
 echo 'ACTION=="add", BUS=="usb", SYSFS{idVendor}=="1ab1", SYSFS{idProduct}=="0588", GROUP:="adm"' > tmpfile
 sudo chown root:root tmpfile
 sudo mv tmpfile /etc/udev/rules.d/10-rigol.rules
 sudo udevadm control --reload-rules
 
-
-NOTES:
+NOTES
+-----
 On my DS1102E the WAVE:POINT:MODE options seem to have no effect
 
