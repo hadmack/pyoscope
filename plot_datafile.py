@@ -1,4 +1,11 @@
 #!/usr/bin/python
+""" plot_datafile.py
+    Script to plot any number of oscilloscope data set files
+    No file name specified = stdin
+    
+    To plot from stdin:
+    echo myfile.dat | ./plot_datafile.py
+    but you could pipe the output of any command with proper text format"""
 import numpy
 import matplotlib.pyplot as pyplot
 import sys

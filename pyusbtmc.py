@@ -69,7 +69,8 @@ class RigolScope(usbtmc):
         self.write(":RUN")
     
     def forceTrigger(self):
-        """Force the scope to trigger now"""
+        """Force the scope to trigger now
+           Also returns scope to local control"""
         self.write(":KEY:FORC")
     
     def unlock(self):
@@ -170,7 +171,7 @@ class RigolScope(usbtmc):
         
            be carefull that anything written to file that is not data
            is prefixed with a # as a comment"""
-        fd.write("# Time\tChannel 1\tChannel 2\n")
+        fd.write("# Time     \tChannel 1\tChannel 2\n")
         for i in range(time.size):
             # time resolution is 1/600 = 0.0017 => 5 sig figs
             # voltage resolution 1/255 = 0.004 => 4 sig figs
