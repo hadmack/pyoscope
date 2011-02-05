@@ -75,7 +75,8 @@ class RigolScope(usbtmc):
     
     def unlock(self):
         """Unlock scope panel keys"""
-        self.write(":KEY:LOCK DIS")
+        #self.write(":KEY:LOCK DIS")
+        self.forceTrigger()
     
     def close(self):
         """Overload usbtmc close for Rigol specific commands"""
