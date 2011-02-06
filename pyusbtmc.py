@@ -58,12 +58,40 @@ class usbtmc:
 
 RIGOL_WAV_PREAMBLE_LENGTH = 10
 
+class ScopeChannel:
+    '''Data and state container for a scope channel
+       scope is a RigolScope instance'''
+    def __init__(self, scope, channel_num):
+        self.scope = scope
+        self.chan = channel_num
+        
+    def grabChannelData(self):
+        '''Grab new data from the scope'''
+        self.data       = self.scope.readData(self.chan)
+        self.voltscale  = self.scope.getVoltScale(self.chan)
+        self.voltoffset = self.scope.getVoltOffset(chan)
+
+        
+    def getScaledWaveform(self):
+        """Returns a numpy array with voltage scaled scope trace from most recent grab"""
+        # First invert the data (ya rly)
+        idata = 255 - self.data
+        # Now, we know from experimentation that the scope display range is actually
+        # 30-229.  So shift by 130 - the voltage offset in counts, then scale to
+        # get the actual voltage.
+        return (idata - 130.0 - self.voltoffset/self.voltscale*25) / 25 * self.voltscale
+
+    
+        
+
 class RigolScope(usbtmc):
     """Class to control a Rigol DS1000 series 2 channel oscilloscope"""
     def __init__(self, device):
         usbtmc.__init__(self, device)
         self.name = self.getName()
         print "# Connected to: " + self.name
+        self.chan1 = ScopeChannel(self, 1)
+        self.chan2 = ScopeChannel(self, 2)
     
     def stop(self):
         """Stop acquisition"""
@@ -142,26 +170,27 @@ class RigolScope(usbtmc):
         data = (data - 130.0 - voltoffset/voltscale*25) / 25 * voltscale
         return data
   
-    def getTimeAxis(self):
+    def makeTimeAxis(self):
         """Retrieve timescale and offset from the scope and return an array or
            time points corresponding to the present scope trace
            Units are seconds by default
            Returns a numpy array of time points"""
-        timescale  = self.getTimeScale()
-        timeoffset = self.getTimeOffset()
-        # Now, generate a time axis.  The scope display range is 0-600, with 300 being
-        # time zero.
-        timespan = 300./50*timescale
-        time = numpy.linspace(-timespan,+timespan, 600)
-        return time
+        # TODO: How can I store these in sec/div as displayed on scope?
+        self.timescale  = self.getTimeScale()
+        self.timeoffset = self.getTimeOffset()
+        # The scope display range is 0-600, with 300 being time zero.
+        timespan = 300./50*self.timescale
+        self.timeaxis = numpy.linspace(-timespan,+timespan, 600)
         
+    def getTimeAxis(self):
+        return self.timeaxis
+
     def writeWaveformToFile(self, filename, chan=1):
         """Write scaled scope data to file
            Zeros are generated for any unused channel for consistancy in data file
            A blank filename='' implies stdout"""
         if filename == "": fd = sys.stdout
         else: fd = open(filename, 'w')
-        time = self.getTimeAxis()
         data1 = numpy.zeros(time.size)
         data2 = numpy.zeros(time.size)
         if chan=='BOTH': chan = 3
@@ -170,10 +199,11 @@ class RigolScope(usbtmc):
         if chan==2 or chan==3:
             data2 = self.getScaledWaveform(2)
         
-        self._writeChannelDataToFile(fd, data1, data2, time)
+        self._writeChannelDataToFile(fd, data1, data2, self.timeaxis)
         fd.close()
     
-    def _writeChannelDataToFile(self, fd, data1, data2, time):
+    def _writeChannelDataToFile(self, fd, data1=self.chan1.data, 
+                                data2=self.chan2.data, time=self.time):
         """Write data and time arrays to file descriptor
         
            be carefull that anything written to file that is not data
@@ -183,6 +213,15 @@ class RigolScope(usbtmc):
             # time resolution is 1/600 = 0.0017 => 5 sig figs
             # voltage resolution 1/255 = 0.004 => 4 sig figs
             fd.write("%1.4e\t%1.3e\t%1.3e\n"%(time[i],data1[i],data2[i]))
+
+    def grabData(self):
+        '''Retrieves and stores voltage and time axes data'''
+        # Check which channels are active then latch data
+        self.chan1.grabChannelData()
+        self.chan2.grabChannelData()
+        self.makeTimeAxis()
+        self.timestamp = time.time()
+        
         
 def main():
     '''Module test code'''
