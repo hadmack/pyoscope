@@ -70,8 +70,7 @@ class ScopeChannel:
         self.data       = self.scope.readData(self.chan)
         self.voltscale  = self.scope.getVoltScale(self.chan)
         self.voltoffset = self.scope.getVoltOffset(chan)
-
-        
+ 
     def getScaledWaveform(self):
         """Returns a numpy array with voltage scaled scope trace from most recent grab"""
         # First invert the data (ya rly)
@@ -81,8 +80,6 @@ class ScopeChannel:
         # get the actual voltage.
         return (idata - 130.0 - self.voltoffset/self.voltscale*25) / 25 * self.voltscale
 
-    
-        
 
 class RigolScope(usbtmc):
     """Class to control a Rigol DS1000 series 2 channel oscilloscope"""
@@ -92,7 +89,12 @@ class RigolScope(usbtmc):
         print "# Connected to: " + self.name
         self.chan1 = ScopeChannel(self, 1)
         self.chan2 = ScopeChannel(self, 2)
+        grabbed_channels = 0
+        self.size = 0
     
+    ##################################
+    # Direct Harware Control Methods #
+    ##################################
     def stop(self):
         """Stop acquisition"""
         self.write(":STOP")
@@ -137,89 +139,98 @@ class RigolScope(usbtmc):
     def getWavePointsMode(self):
         """Return the current waveform point mode"""
         return self.query('WAVEFORM:POINTS:MODE?')
-                
+
+    def getVoltScale(self,chan=1):
+        return float(self.query(":CHAN"+str(chan)+":SCAL?", 20))
+
+    def getVoltOffset(self,chan=1):
+        return float(self.query(":CHAN"+str(chan)+":OFFS?", 20))
+
+    def getTimeScale(self):
+        return float(self.query(":TIM:SCAL?", 20))
+
+    def getTimeOffset(self):
+        return float(self.query(":TIM:OFFS?", 20))
+
+    #####################
+    # Private Methods   #
+    #####################           
     def readData(self,chan=1):
         """Read scope channel and return numpy array"""
         rawdata = self.readRawData(chan)
         return numpy.frombuffer(rawdata, dtype='B', offset=RIGOL_WAV_PREAMBLE_LENGTH)
     
-    def getVoltScale(self,chan=1):
-        return float(self.query(":CHAN"+str(chan)+":SCAL?", 20))
-    
-    def getVoltOffset(self,chan=1):
-        return float(self.query(":CHAN"+str(chan)+":OFFS?", 20))
-    
-    def getTimeScale(self):
-        return float(self.query(":TIM:SCAL?", 20))
-        
-    def getTimeOffset(self):
-        return float(self.query(":TIM:OFFS?", 20))
-        
-    def getScaledWaveform(self,chan=1):
-        """Read scope channel vertical axis and rescale data from axis information
-           Returns a numpy array with voltage scaled scope trace"""
-        data = self.readData(chan)
-        voltscale  = self.getVoltScale(chan)
-        voltoffset = self.getVoltOffset(chan)
-        
-        # First invert the data (ya rly)
-        data = 255 - data
-        # Now, we know from experimentation that the scope display range is actually
-        # 30-229.  So shift by 130 - the voltage offset in counts, then scale to
-        # get the actual voltage.
-        data = (data - 130.0 - voltoffset/voltscale*25) / 25 * voltscale
-        return data
-  
     def makeTimeAxis(self):
         """Retrieve timescale and offset from the scope and return an array or
            time points corresponding to the present scope trace
            Units are seconds by default
            Returns a numpy array of time points"""
         # TODO: How can I store these in sec/div as displayed on scope?
+        # NOTE: This will not work with more than 600 data points!
         self.timescale  = self.getTimeScale()
         self.timeoffset = self.getTimeOffset()
         # The scope display range is 0-600, with 300 being time zero.
         timespan = 300./50*self.timescale
         self.timeaxis = numpy.linspace(-timespan,+timespan, 600)
         
+    def checkActiveChannels(self):
+        '''Probe which scope channels are active'''
+        # TODO: Implementation
+        # We probably should just always get both channels?
+        return 1 & 2
+    
+    ##################
+    # Public Methods #
+    ##################
     def getTimeAxis(self):
         return self.timeaxis
+        
+    def getScaledWaveform(self,chan=1):
+        """Returns most recently grabbed data for chan"""
+        if chan == 1:
+            return self.chan1.getScaledWaveform()
+        elif chan == 2:
+            return self.chan2.getScaledWaveform()
+        elif chan == 1 & 2:
+            return self.chan1.getScaledWaveform(), self.chan2.getScaledWaveform()
+        data = self.readData(chan)
+        voltscale  = self.getVoltScale(chan)
+        voltoffset = self.getVoltOffset(chan)
 
-    def writeWaveformToFile(self, filename, chan=1):
-        """Write scaled scope data to file
-           Zeros are generated for any unused channel for consistancy in data file
-           A blank filename='' implies stdout"""
-        if filename == "": fd = sys.stdout
+    def writeWaveformToFile(self, filename):
+        """Write the most recently acquired data to file"""
+        if filename == "": fd = sys.stdout # use stdout if no filename
         else: fd = open(filename, 'w')
-        data1 = numpy.zeros(time.size)
-        data2 = numpy.zeros(time.size)
-        if chan=='BOTH': chan = 3
-        if chan==1 or chan==3:
-            data1 = self.getScaledWaveform(1)
-        if chan==2 or chan==3:
-            data2 = self.getScaledWaveform(2)
+        data1 = numpy.zeros(self.size)
+        data2 = numpy.zeros(self.size)
+        if self.grabbed_channels | 1:
+            data1 = self.chan1.getScaledWaveform()
+        if self.grabbed_channels | 2:
+            data2 = self.chan2.getScaledWaveform()
         
-        self._writeChannelDataToFile(fd, data1, data2, self.timeaxis)
-        fd.close()
-    
-    def _writeChannelDataToFile(self, fd, data1=self.chan1.data, 
-                                data2=self.chan2.data, time=self.time):
-        """Write data and time arrays to file descriptor
-        
-           be carefull that anything written to file that is not data
-           is prefixed with a # as a comment"""
+        fd.write("# " + self.name)
+        fd.write("# " + time.ctime(self.timestamp))
+        fd.write("# (Configuration Data)")
         fd.write("# Time     \tChannel 1\tChannel 2\n")
-        for i in range(time.size):
+        for i in range(self.size):
             # time resolution is 1/600 = 0.0017 => 5 sig figs
             # voltage resolution 1/255 = 0.004 => 4 sig figs
-            fd.write("%1.4e\t%1.3e\t%1.3e\n"%(time[i],data1[i],data2[i]))
-
+            fd.write("%1.4e\t%1.3e\t%1.3e\n"%(self.timeaxis[i],data1[i],data2[i]))
+        fd.close()
+        
     def grabData(self):
-        '''Retrieves and stores voltage and time axes data'''
-        # Check which channels are active then latch data
-        self.chan1.grabChannelData()
-        self.chan2.grabChannelData()
+        '''Retrieves and stores voltage and time axes data
+           for now grabs both channels'''
+        # TODO: Check which channels are active then latch data for them
+        active_channels = self.checkActiveChannels()
+        if active_channels & 1:
+            self.chan1.grabChannelData()
+            self.grabbed_channels &= CHANNEL1
+        if active_channels & 2:
+            self.chan2.grabChannelData()
+            self.grabbed_channels &= CHANNEL2
         self.makeTimeAxis()
+        self.size = self.timeaxis.size
         self.timestamp = time.time()
         
         
@@ -227,7 +238,8 @@ def main():
     '''Module test code'''
     print "# RigolScope Test #"
     scope = RigolScope("/dev/usbtmc0")
-    scope.writeWaveformToFile("", 1+2)
+    scope.grabData()
+    scope.writeWaveformToFile("")
     scope.close()
 		
 if __name__ == "__main__":
