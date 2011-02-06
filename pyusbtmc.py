@@ -1,21 +1,26 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # PyUSBtmc
 #
+# Copyright (c) 2011 Mike Hadmack
+# Copyright (c) 2010 Matt Mets
+# This code is distributed under the MIT license
 import os
 import sys
 import numpy
 
 class usbtmc:
-    """Simple implementation of a USBTMC device driver, in the style of visa.h"""
+    """Simple implementation of a USBTMC device interface using the
+       linux kernel usbtmc character device driver"""
     def __init__(self, device):
         self.device = device
         try:
+            # Get a handle to the IO device
             self.FILE = os.open(device, os.O_RDWR)
         except OSError as e:
             print >> sys.stderr, "Error opening device: ", e
-            sys.exit(1)
-            # TODO: This should throw an exception back to caller rather than exit
+            raise e
+            # TODO: This should throw a more descriptive exception to caller
     
     def write(self, command):
         """Write command directly to the device"""
@@ -24,7 +29,7 @@ class usbtmc:
         except OSError as e:
             print >> sys.stderr, "Write Error: ", e
 
-    def read(self, length = 4000):
+    def read(self, length=4000):
         """Read an arbitrary amount of data directly from the device"""
         try:
             return os.read(self.FILE, length)
@@ -51,10 +56,10 @@ class usbtmc:
         os.close(self.FILE)
 
 
-WAV_PREAMBLE_LENGTH = 10
+RIGOL_WAV_PREAMBLE_LENGTH = 10
 
 class RigolScope(usbtmc):
-    """Class to control a Rigol DS1000 series oscilloscope"""
+    """Class to control a Rigol DS1000 series 2 channel oscilloscope"""
     def __init__(self, device):
         usbtmc.__init__(self, device)
         self.name = self.getName()
@@ -75,7 +80,7 @@ class RigolScope(usbtmc):
     
     def unlock(self):
         """Unlock scope panel keys"""
-        #self.write(":KEY:LOCK DIS")
+        #self.write(":KEY:LOCK DIS") # another way
         self.forceTrigger()
     
     def close(self):
@@ -97,7 +102,8 @@ class RigolScope(usbtmc):
         """Set the waveform point mode
            mode='NORM' -- 600 points from screen
            mode='RAW'  -- Return full memory in STOP state
-           mode='MAX'  -- NORM in RUN, RAW in STOP """
+           mode='MAX'  -- NORM in RUN, RAW in STOP 
+           TODO: Get this to work"""
         self.write('WAVEFORM:POINTS:MODE ' + mode)
         
     def getWavePointsMode(self):
@@ -107,7 +113,7 @@ class RigolScope(usbtmc):
     def readData(self,chan=1):
         """Read scope channel and return numpy array"""
         rawdata = self.readRawData(chan)
-        return numpy.frombuffer(rawdata, dtype='B', offset=WAV_PREAMBLE_LENGTH)
+        return numpy.frombuffer(rawdata, dtype='B', offset=RIGOL_WAV_PREAMBLE_LENGTH)
     
     def getVoltScale(self,chan=1):
         return float(self.query(":CHAN"+str(chan)+":SCAL?", 20))
@@ -179,11 +185,10 @@ class RigolScope(usbtmc):
             fd.write("%1.4e\t%1.3e\t%1.3e\n"%(time[i],data1[i],data2[i]))
         
 def main():
+    '''Module test code'''
     print "# RigolScope Test #"
     scope = RigolScope("/dev/usbtmc0")
-    
     scope.writeWaveformToFile("", 1+2)
-    
     scope.close()
 		
 if __name__ == "__main__":

@@ -1,11 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+#
+# PyUSBtmc
+# display_channel.py
+#
+# Copyright (c) 2011 Mike Hadmack
+# Copyright (c) 2010 Matt Mets
+# This code is distributed under the MIT license
 ''' realtime_plot_demo.py
     Realtime plot of both channels
     This is a fork of realtime_chart.py to use the newer RigolScope interface'''
 import numpy
-import matplotlib.pyplot as plot
-import time
+from matplotlib import pyplot
 from pyusbtmc import RigolScope
+import time
 
 # Initialize our scope
 scope = RigolScope("/dev/usbtmc0")
@@ -13,7 +20,7 @@ scope = RigolScope("/dev/usbtmc0")
 # Turn on interactive plotting
 plot.ion()
 
-while 1:  # How can this be broken other than ^C?
+while 1:  # How can this loop be broken other than ^C?
     # introduce a delay so that a break is recognized?
     time.sleep(0.1)
     
@@ -22,7 +29,6 @@ while 1:  # How can this be broken other than ^C?
     t = scope.getTimeAxis()
 
     # Start data acquisition again, and put the scope back in local mode
-    #test.write(":KEY:FORC")
     scope.forceTrigger()
     
     # Plot the data

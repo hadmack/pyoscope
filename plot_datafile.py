@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """ plot_datafile.py
     Script to plot any number of oscilloscope data set files
     No file name specified = stdin

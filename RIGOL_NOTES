@@ -1,0 +1,58 @@
+Here is a list of mostly undocumented Rigol scope commands.  Some have be explored by others on the http://www.rcgroups.com/forums/showthread.php?t=663958 forum.
+
+:WAVEFORM:POINTS:MODE RAW
+:WAVEFORM:POINTS:MODE MAXIMUM
+:WAVEFORM:POINTS:MODE NORMAL
+
+:WAV:MEMORYDATA? <source>
+:CAL:TSENS?
+:CALIBRATE:TSENSITIVITY?
+:SYSTEM:RAMOUNT?
+:SYSTEM:GAMOUNT?
+:INFO:SYSSERVICE ON
+:INFO:HARDVERSION
+:INFO:SAVEPARA
+:CHANNEL:ACTIVE?
+Returns which channel is active, i.e. will be affected when changing the vertical scale or position.
+:CHANNEL:ACTIVE CHANNEL1
+Makes channel 1 the active channel
+:DISPLAY:SCREEN?
+:DISPLAY:SCREEN INVERTED
+:DISPLAY:SCREEN NORMAL
+With these commands the screen can be inverted and changed back to normal.
+:SYSTEM:DATA?
+Returns 112 bytes of data.
+:IO:TEST ECHO
+Returns the data passed to the command ("ECHO" in this case).
+:WAVEFORM:DATA? XY
+Returns 2048 bytes of data.
+:WAVEFORM:DATA? ROLL
+Returns 2048 bytes of data.
+:WAVEFORM:MEMORYDATA?
+Maybe a synonym for ":WAVEFORM:DATA?"?
+:WAVEFORM:POINTS:MODE MAXIMUM
+Allows to read entire memory contents with ":WAVEFORM:DATA?" when the acquisition is stopped. See posting below for more information.
+:WAVEFORM:POINTS:MODE NORMAL
+Switches back to "normal" mode where ":WAVEFORM:DATA?" returns only 600 points.
+:STORAGE:TYPE?
+Returns "WAVEFORMS".
+:INFO:SERIAL?
+Returns the serial number.
+:INFO:SERIAL 12345
+Sets(!!) the serial number returned by "*IDN?" and shown in the "System Info" dialog.
+:INFO:MODEL DS1xxxx
+Sets(!!) the model returned by "*IDN?" and shown in the "System Info" dialog.
+:INFO:POWERUPTIMES?
+Returns the number of times the scope was powered up.
+:INFO:EQUTRIGDELAY?
+For my scope, it returns "-5.30e-09". Careful(!!): There is also a command to change this setting. I expect changing this setting could break your scope.
+:INFO:REALTRIGDELAY?
+For my scope, it returns "8.00e-10". Careful(!!): There is also a command to change this setting. I expect changing this setting could break your scope.
+:COUNTER:VALUE?
+Returns the value of the hardware counter.
+
+There is a good discussion thread on:
+http://www.rcgroups.com/forums/showthread.php?t=663958
+
+And a project for usbtmc before the kernel driver was introduced:
+http://svn.openmoko.org/developers/werner/ahrt/host/tmc/

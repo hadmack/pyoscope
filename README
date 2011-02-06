@@ -4,6 +4,19 @@ It was conceived of by Matt Mets in 2010, and is distributed under the MIT Licen
 
 The PyUSBtmc project is in no way affiliated with Rigol Technologies Inc.
 
+PyUSBtmc interacts with USBtmc compliant instruments through the linux kernel's usbtmc character device driver.  The first USBtmc device is automatically mapped by the linux kernel to /dev/usbtmc0 which may be interacted with in the usual unix way.  For example:
+echo "*IDN?" > /dev/usbtmc0; cat /dev/usbtmc0
+will send the standard IEEE command for the device to identify itself.
+
+Project Home: https://github.com/hadmack/pyusbtmc
+
+Dependancies
+------------
+python 2.6 or later
+linux kernel 2.6.36 or later
+numpy
+matplotlib
+
 Setup USB permissions for udev
 ------------------------------
 echo 'ACTION=="add", BUS=="usb", SYSFS{idVendor}=="1ab1", SYSFS{idProduct}=="0588", GROUP:="adm"' > tmpfile
@@ -13,5 +26,5 @@ sudo udevadm control --reload-rules
 
 NOTES
 -----
-On my DS1102E the WAVE:POINT:MODE options seem to have no effect
+On my DS1102E the WAVE:POINT:MODE options seem to have no effect.  Maybe the firmware is out of date.
 
