@@ -199,8 +199,13 @@ class RigolScope(usbtmc):
 
     def writeWaveformToFile(self, filename):
         """Write the most recently acquired data to file"""
-        if filename == "": fd = sys.stdout # use stdout if no filename
-        else: fd = open(filename, 'w')
+        if filename == "": fo = sys.stdout # use stdout if no filename
+        else: fo = open(filename, 'w')
+        self.writeWaveform(fo)
+        fd.close()
+        
+    def writeWaveform(self, fo):
+        """Write the most recently acquired data to a file object"""
         data1 = numpy.zeros(self.size)
         data2 = numpy.zeros(self.size)
         if self.grabbed_channels | 1:
@@ -208,15 +213,15 @@ class RigolScope(usbtmc):
         if self.grabbed_channels | 2:
             data2 = self.chan2.getScaledWaveform()
         
-        fd.write("# " + self.name)
-        fd.write("# " + time.ctime(self.timestamp))
-        fd.write("# (Configuration Data)")
-        fd.write("# Time     \tChannel 1\tChannel 2\n")
+        fo.write("# " + self.name)
+        fo.write("# " + time.ctime(self.timestamp))
+        fo.write("# (Configuration Data)")
+        fo.write("# Time     \tChannel 1\tChannel 2\n")
         for i in range(self.size):
             # time resolution is 1/600 = 0.0017 => 5 sig figs
             # voltage resolution 1/255 = 0.004 => 4 sig figs
-            fd.write("%1.4e\t%1.3e\t%1.3e\n"%(self.timeaxis[i],data1[i],data2[i]))
-        fd.close()
+            fo.write("%1.4e\t%1.3e\t%1.3e\n"%(self.timeaxis[i],data1[i],data2[i]))
+        
         
     def grabData(self):
         '''Retrieves and stores voltage and time axes data
