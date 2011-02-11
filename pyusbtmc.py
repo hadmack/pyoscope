@@ -8,6 +8,7 @@
 import os
 import sys
 import numpy
+import time
 
 class usbtmc:
     """Simple implementation of a USBTMC device interface using the
@@ -69,7 +70,7 @@ class ScopeChannel:
         '''Grab new data from the scope'''
         self.data       = self.scope.readData(self.chan)
         self.voltscale  = self.scope.getVoltScale(self.chan)
-        self.voltoffset = self.scope.getVoltOffset(chan)
+        self.voltoffset = self.scope.getVoltOffset(self.chan)
  
     def getScaledWaveform(self):
         """Returns a numpy array with voltage scaled scope trace from most recent grab"""
@@ -89,7 +90,7 @@ class RigolScope(usbtmc):
         print "# Connected to: " + self.name
         self.chan1 = ScopeChannel(self, 1)
         self.chan2 = ScopeChannel(self, 2)
-        grabbed_channels = 0
+        self.grabbed_channels = 0
         self.size = 0
     
     ##################################
@@ -177,7 +178,7 @@ class RigolScope(usbtmc):
         '''Probe which scope channels are active'''
         # TODO: Implementation
         # We probably should just always get both channels?
-        return 1 & 2
+        return 1 | 2
     
     ##################
     # Public Methods #
@@ -202,7 +203,7 @@ class RigolScope(usbtmc):
         if filename == "": fo = sys.stdout # use stdout if no filename
         else: fo = open(filename, 'w')
         self.writeWaveform(fo)
-        fd.close()
+        fo.close()
         
     def writeWaveform(self, fo):
         """Write the most recently acquired data to a file object"""
@@ -230,10 +231,10 @@ class RigolScope(usbtmc):
         active_channels = self.checkActiveChannels()
         if active_channels & 1:
             self.chan1.grabChannelData()
-            self.grabbed_channels &= CHANNEL1
+            self.grabbed_channels &= 1
         if active_channels & 2:
             self.chan2.grabChannelData()
-            self.grabbed_channels &= CHANNEL2
+            self.grabbed_channels &= 2
         self.makeTimeAxis()
         self.size = self.timeaxis.size
         self.timestamp = time.time()
@@ -244,7 +245,7 @@ def main():
     print "# RigolScope Test #"
     scope = RigolScope("/dev/usbtmc0")
     scope.grabData()
-    scope.writeWaveformToFile("")
+    scope.writeWaveformToFile("out.dat")
     scope.close()
 		
 if __name__ == "__main__":
