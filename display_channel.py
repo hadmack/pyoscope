@@ -21,6 +21,8 @@ scope.stop()
 # Grab the data from channel 1 
 chan = 1
 #scope.setWavePointsMode('NORM')
+scope.grabData()
+
 data = scope.getScaledWaveform(chan)
 
 # Now, generate a time axis.

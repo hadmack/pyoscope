@@ -18,12 +18,13 @@ import time
 scope = RigolScope("/dev/usbtmc0")
 
 # Turn on interactive plotting
-plot.ion()
+pyplot.ion()
 
 while 1:  # How can this loop be broken other than ^C?
     # introduce a delay so that a break is recognized?
     time.sleep(0.1)
     
+    scope.grabData()
     data1 = scope.getScaledWaveform(1)
     data2 = scope.getScaledWaveform(2)
     t = scope.getTimeAxis()
@@ -32,14 +33,14 @@ while 1:  # How can this loop be broken other than ^C?
     scope.forceTrigger()
     
     # Plot the data
-    plot.clf()  # Clear current plot figure
-    plot.plot(t, data1)
-    plot.plot(t, data2)
-    plot.title("Oscilloscope data")
-    plot.ylabel("Voltage (V)")
-    plot.xlabel("Time (s)")
-    plot.xlim(t[0], t[599])
+    pyplot.clf()  # Clear current plot figure
+    pyplot.plot(t, data1)
+    pyplot.plot(t, data2)
+    pyplot.title("Oscilloscope data")
+    pyplot.ylabel("Voltage (V)")
+    pyplot.xlabel("Time (s)")
+    pyplot.xlim(t[0], t[599])
     # need to somehow supress the vertical autoscaling. 
     # Maybe a button to autoscale on demand? 
-    plot.draw()
+    pyplot.draw()
 
