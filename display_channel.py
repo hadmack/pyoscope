@@ -18,12 +18,11 @@ scope = RigolScope("/dev/usbtmc0")
 # Stop data acquisition
 scope.stop()
     
-# Grab the data from channel 1 
-chan = 1
 #scope.setWavePointsMode('NORM')
 scope.grabData()
 
-data = scope.getScaledWaveform(chan)
+data1 = scope.getScaledWaveform(1)
+data2 = scope.getScaledWaveform(2)
 
 # Now, generate a time axis.
 time = scope.getTimeAxis() 
@@ -44,7 +43,8 @@ scope.unlock()
 scope.close()
  
 # Plot the data
-pyplot.plot(time, data)
+pyplot.plot(time, data1)
+pyplot.plot(time, data2)
 pyplot.title("Oscilloscope Channel 1")
 pyplot.ylabel("Voltage (V)")
 pyplot.xlabel("Time (" + tUnit + ")")
