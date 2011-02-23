@@ -43,8 +43,8 @@ scope.unlock()
 scope.close()
  
 # Plot the data
-pyplot.plot(time, data1)
-pyplot.plot(time, data2)
+pyplot.plot(time,data1)
+pyplot.plot(time,data2)
 pyplot.title("Oscilloscope Channel 1")
 pyplot.ylabel("Voltage (V)")
 pyplot.xlabel("Time (" + tUnit + ")")
