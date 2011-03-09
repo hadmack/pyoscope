@@ -19,7 +19,7 @@ except:
     filename = ""
 
 print filename
-#scope = RigolScope("/dev/usbtmc0")
-#scope.grabData()
-#scope.writeWaveformToFile("out.dat")
-#scope.close()
+scope = RigolScope("/dev/usbtmc0")
+scope.grabData()
+scope.writeWaveformToFile(filename)
+scope.close()
