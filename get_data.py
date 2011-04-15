@@ -18,6 +18,10 @@ try:
 except:
     filename = ""
 
+if filename == "--help":
+    print """Usage: 1%s [filename]\n   Reads both traces from oscilloscope and writes as ASCII tabular data to filename.  If no filename is given the program outputs to STDOUT.  STDOUT can be directed into a file or piped into another application.  For example:\n    1%s myfile\n    1%s > myfile\n    1%s | ./plot_data.py"""%sys.argv[0]
+    sys.exit(1)
+
 print filename
 scope = RigolScope("/dev/usbtmc0")
 scope.grabData()
