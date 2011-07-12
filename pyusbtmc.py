@@ -10,6 +10,12 @@ import sys
 import numpy
 import time
 
+class PyUsbTmcError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
 class usbtmc:
     """Simple implementation of a USBTMC device interface using the
        linux kernel usbtmc character device driver"""
@@ -19,8 +25,9 @@ class usbtmc:
             # Get a handle to the IO device
             self.FILE = os.open(device, os.O_RDWR)
         except OSError as e:
-            print >> sys.stderr, "Error opening device: ", e
-            raise e
+            raise PyUsbTmcError("Error opening device: " + str(e))
+            # print >> sys.stderr, "Error opening device: ", e
+            # raise e
             # TODO: This should throw a more descriptive exception to caller
     
     def write(self, command):
