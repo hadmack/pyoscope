@@ -28,3 +28,4 @@ NOTES
 -----
 On my DS1102E the WAVE:POINT:MODE options seem to have no effect.  Maybe the firmware is out of date.
 
+udev can add more symlinks with SYMLINK+="usbtmc-newname"
