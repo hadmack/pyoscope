@@ -9,8 +9,6 @@
 from pyusbtmc import usbtmc
 import numpy
 
-false = 0; true = 1
-
 class WaveformGenerator(usbtmc):
     """Class to control a BNC 645 Arbitrary Waveform Generator"""
     def __init__(self, device):
@@ -19,7 +17,7 @@ class WaveformGenerator(usbtmc):
         print "# Connected to: " + self.name
         
         self.write("*RST;*CLS")  # Reset instrument
-        self.set50OhmOutput(false)  # Set output to high impedance
+        self.set50OhmOutput(False)  # Set output to high impedance
         self.write("FORM:BORD SWAP")  # Set for little endian byte order
 
     def outputOn(self):
