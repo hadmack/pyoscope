@@ -29,3 +29,8 @@ NOTES
 On my DS1102E the WAVE:POINT:MODE options seem to have no effect.  Maybe the firmware is out of date.
 
 udev can add more symlinks with SYMLINK+="usbtmc-newname"
+
+new udev rules
+ACTION=="add", BUS=="usb", SYSFS{idVendor}=="164e", SYSFS{idProduct}=="0fa2", GROUP:="adm", SYMLINK+="usbtmc-bnc645"
+ACTION=="add", BUS=="usb", SYSFS{idVendor}=="1ab1", SYSFS{idProduct}=="0588", GROUP:="adm", SYMLINK+="usbtmc-rigol"
+

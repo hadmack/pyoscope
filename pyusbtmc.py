@@ -250,7 +250,7 @@ class RigolScope(usbtmc):
 def main():
     '''Module test code'''
     print "# RigolScope Test #"
-    scope = RigolScope("/dev/usbtmc0")
+    scope = RigolScope("/dev/usbtmc-rigol")
     scope.grabData()
     scope.writeWaveformToFile("out.dat")
     scope.close()

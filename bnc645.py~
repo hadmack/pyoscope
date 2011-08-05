@@ -62,37 +62,19 @@ class WaveformGenerator(usbtmc):
         self.setVoltageLow(vMin);
         self.setVoltageHigh(vMax);
         
-    def sendWaveformData(self, data, duration, vMin, vMax):
-        '''Loads an array of voltage points into waveform generator.
-           duration in seconds is the length of the full data set
-           vMin, vMax limit the allowed range of data.  
-           Any data out of range is clipped to these limits.'''
+    def sendWaveformData(self, data, duration, voltageMin, voltageMax):
+        '''Loads a data set where values from -1.0 to 1.0 correspond to the voltage range given.  
+           Duration is the time in seconds for the full data set'''
         count = len(data)
-        block = []
-        dMin = min(data)
-        dMax = max(data)
-        dRange = dMax - dMin
-        for v in data:
-            if v < vMin:
-                v = vMin
-            elif v > vMax:
-                v = vMax
-            x = 2.0*(v - dMin)/dRange - 1.0
-            b = int(8191*x)
-            #print b
-            block.append(b)
-        
-        self.sendDataBlock(block)
-        self.setFrequency(1/duration)
-        self.setVoltageRange(dMin, dMax)
-        
-    def sendDataBlock(self, block):
-        count = len(block)
-        buf = "DATA:DAC VOLATILE"
-        for x in block:
+        buf = "DATA VOLATILE"
+        for x in data:
             buf += ", " + str(x)
         print buf
         self.write(buf)
+        self.setFrequency(1/duration)
+        #self.setVoltageRange(voltageMin, voltageMax)
+        #self.setOffset(5.0)
+        #self.setAmplitude(3.0)
         
 def main():
     wg = WaveformGenerator("/dev/usbtmc-bnc645")
@@ -100,11 +82,10 @@ def main():
     #wg.setupExtTrigger()
     
     # Send data
-    #data = numpy.array([2.2,2.1,1.8, 1.6, 1.5, 1.4])
-    data = numpy.arange(-1.0, 3.0, 0.1)
-    wg.sendWaveformData(data, 100e-6, 0.0, 10.0)
-    #wg.setOffset(0.0)
-    #wg.setAmplitude(5.0)
+    data = numpy.array([1.0, -1.0, 0.5, -0.5, 0.25, -0.25])
+    wg.sendWaveformData(data, 100e-6,-2.0, 3.0)
+    self.setOffset(0.0)
+    self.setAmplitude(1.0)
 
     wg.setFunction("USER")
     wg.outputOn()
