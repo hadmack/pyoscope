@@ -9,6 +9,8 @@
 from pyusbtmc import usbtmc
 import numpy
 
+DATA_MARGIN = 0.010 #VOLTS  keep the AWG max and min at least this far from the mean value of data
+
 class WaveformGenerator(usbtmc):
     """Class to control a BNC 645 Arbitrary Waveform Generator"""
     def __init__(self, device):
@@ -69,6 +71,11 @@ class WaveformGenerator(usbtmc):
         block = []
         dMin = min(data)
         dMax = max(data)
+        dMean = numpy.mean(data)
+        if dMax < (dMean + DATA_MARGIN):
+            dMax = dMean + DATA_MARGIN
+        if dMin > (dMean - DATA_MARGIN):
+            dMin = dMean - DATA_MARGIN 
         dRange = dMax - dMin
         for v in data:
             if v < vMin:
@@ -77,11 +84,10 @@ class WaveformGenerator(usbtmc):
                 v = vMax
             x = 2.0*(v - dMin)/dRange - 1.0
             b = int(8191*x)
-            #print b
             block.append(b)
         
         self.sendDataBlock(block)
-        self.setFrequency(1/duration)
+        self.setFrequency(1./duration)
         self.setVoltageRange(dMin, dMax)
         
     def sendDataBlock(self, block):
@@ -89,7 +95,7 @@ class WaveformGenerator(usbtmc):
         buf = "DATA:DAC VOLATILE"
         for x in block:
             buf += ", " + str(x)
-        print buf
+        #print buf
         self.write(buf)
         
 def main():

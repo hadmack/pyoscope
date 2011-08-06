@@ -13,7 +13,7 @@ from pyusbtmc import RigolScope
     derived from capture_channel_1.py but using new interface methods """
  
 # Initialize our scope
-scope = RigolScope("/dev/usbtmc0")
+scope = RigolScope("/dev/usbtmc-rigol")
  
 # Stop data acquisition
 scope.stop()

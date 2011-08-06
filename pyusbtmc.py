@@ -177,9 +177,12 @@ class RigolScope(usbtmc):
         # NOTE: This will not work with more than 600 data points!
         self.timescale  = self.getTimeScale()
         self.timeoffset = self.getTimeOffset()
+        print "Timescale: " + str(self.timescale)
+        print "Timeoffset: " + str(self.timeoffset)
         # The scope display range is 0-600, with 300 being time zero.
-        timespan = 300./50*self.timescale
-        self.timeaxis = numpy.linspace(-timespan,+timespan, 600)
+        timespan = 6*self.timescale
+        print "Timespan: " + str(timespan)
+        self.timeaxis = numpy.linspace(self.timeoffset-timespan,self.timeoffset+timespan, 600)
         
     def checkActiveChannels(self):
         '''Probe which scope channels are active'''
