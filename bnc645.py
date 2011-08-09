@@ -13,15 +13,13 @@ DATA_MARGIN = 0.010 #VOLTS  keep the AWG max and min at least this far from the 
 
 class WaveformGenerator(usbtmc):
     """Class to control a BNC 645 Arbitrary Waveform Generator"""
-    def __init__(self, device):
+    def __init__(self, device, reset=True):
         usbtmc.__init__(self, device)
         self.name = self.getName()
         print "# Connected to: " + self.name
         
-        self.write("*RST;*CLS")  # Reset instrument
-        self.set50OhmOutput(False)  # Set output to high impedance
-        self.write("FORM:BORD SWAP")  # Set for little endian byte order
-        
+        if reset:
+            self.sendReset()
         
     def outputOn(self):
 	    self.write("OUTPut ON");
@@ -150,7 +148,12 @@ class WaveformGenerator(usbtmc):
         sCmd = "DATA:DAC VOLATILE,%s#%d%d"%(align,nchars,data.nbytes)
         buf = sCmd + data.tostring()
         self.write(buf)
-     
+        
+    def sendReset(self):
+        self.write("*RST;*CLS")
+        self.set50OhmOutput(False)  # Set output to high impedance
+        self.write("FORM:BORD SWAP")  # Set for little endian byte order
+        
 def main():
     wg = WaveformGenerator("/dev/usbtmc-bnc645")
 
