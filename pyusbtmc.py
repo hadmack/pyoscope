@@ -215,7 +215,7 @@ class RigolScope(usbtmc):
         self.writeWaveform(fo)
         fo.close()
         
-    def writeWaveform(self, fo):
+    def writeWaveform(self, fo, header=""):
         """Write the most recently acquired data to a file object"""
         data1 = numpy.zeros(self.size)
         data2 = numpy.zeros(self.size)
@@ -224,10 +224,11 @@ class RigolScope(usbtmc):
         if self.grabbed_channels | 2:
             data2 = self.chan2.getScaledWaveform()
         
-        fo.write("# " + self.name)
-        fo.write("# " + time.ctime(self.timestamp))
-        fo.write("# (Configuration Data)")
-        fo.write("# Time     \tChannel 1\tChannel 2\n")
+        fo.write(header)
+        fo.write("# DeviceId=" + self.name)
+        fo.write("# " + time.ctime(self.timestamp) + "\n")
+        fo.write("Chan1: %f V/div, Chan2: %f V/div, Horiz: %f sec/div\n"%(self.chan1.voltscale, self.chan2.voltscale,self.timescale))
+        fo.write("# Time (sec)     \tChannel 1 (V)\tChannel 2 (V)\n")
         for i in range(self.size):
             # time resolution is 1/600 = 0.0017 => 5 sig figs
             # voltage resolution 1/255 = 0.004 => 4 sig figs
