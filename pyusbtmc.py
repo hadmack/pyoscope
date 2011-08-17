@@ -159,6 +159,17 @@ class RigolScope(usbtmc):
 
     def getTimeOffset(self):
         return float(self.query(":TIM:OFFS?", 20))
+        
+    def enableAveraging(self, on=True):
+        if on:
+            self.write(":ACQuire:TYPE AVERage")
+        else:
+            self.write(":ACQuire:TYPE NORMal")
+        self.write(command)
+    
+    def setAverages(self, averages):
+        if averages in [2,4, 8, 16, 32, 64, 128,256]:
+            self.write(":ACQuire:AVERages %d"%averages)
 
     #####################
     # Private Methods   #
