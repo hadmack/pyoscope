@@ -215,9 +215,6 @@ class RigolScope(usbtmc):
             return self.chan2.getScaledWaveform()
         elif chan == 1 & 2:
             return self.chan1.getScaledWaveform(), self.chan2.getScaledWaveform()
-        data = self.readData(chan)
-        voltscale  = self.getVoltScale(chan)
-        voltoffset = self.getVoltOffset(chan)
 
     def writeWaveformToFile(self, filename, header=''):
         """Write the most recently acquired data to file"""
