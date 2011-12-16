@@ -8,7 +8,10 @@
 # This code is distributed under the MIT license
 ''' realtime_plot_demo.py
     Realtime plot of both channels
-    This is a fork of realtime_chart.py to use the newer RigolScope interface'''
+    This is a fork of realtime_chart.py to use the newer RigolScope interface
+    
+    NOTE:  This code has not yet been adapted or tested with pyoscope
+'''
 import numpy
 from matplotlib import pyplot
 from pyusbtmc import RigolScope

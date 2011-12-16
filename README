@@ -1,14 +1,23 @@
-PyUSBtmc is a simple library for interacting with test equipment (primarily Rigol oscilloscopes).
+PyOscope is a library for interacting with oscilloscopes and other test equipment.  
 
-It was conceived of by Matt Mets in 2010, and is distributed under the MIT License. See LICENSE for a copy of this license.
+PyOscope was developed by Michael Hadmack (c) 2011
+This code is distributed under the MIT License. See LICENSE for a copy of this license.
+
+This is a fork of PyUSBtmc by Matt Mets (c) 2010.
+PyOscope extends the functionality of PyUSBtmc with an abstract Scope class with a generic interface.
 
 The PyUSBtmc project is in no way affiliated with Rigol Technologies Inc.
 
-PyUSBtmc interacts with USBtmc compliant instruments through the linux kernel's usbtmc character device driver.  The first USBtmc device is automatically mapped by the linux kernel to /dev/usbtmc0 which may be interacted with in the usual unix way.  For example:
+Presently PyOscope is able to interact with USBtmc compliant instruments using the linux kernel's usbtmc character device driver.  The first USBtmc device is automatically mapped by the linux kernel to /dev/usbtmc0 which may be interacted with in the usual unix way.  For example:
 echo "*IDN?" > /dev/usbtmc0; cat /dev/usbtmc0
 will send the standard IEEE command for the device to identify itself.
+See below for how to set the device permissions properly in Linux
 
-Project Home: https://github.com/hadmack/pyusbtmc
+This library also contains a driver to interact with National Instruments ENET/GPIB modules over ethernet.
+
+The Rigol and Waverunner classes show examples of how to use this library with various types of instruments.
+
+Project Home: https://github.com/hadmack/pyoscope
 
 Dependancies
 ------------

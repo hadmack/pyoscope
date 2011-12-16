@@ -1,2 +1,4 @@
-from pyusbtmc import *
-import bnc645
+from oscope import *
+from rigol import RigolScope
+from waverunner import Waverunner
+from utils import *

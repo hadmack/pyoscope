@@ -1,14 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""" plot_datafile.py
-    Script to plot any number of oscilloscope data set files
-    No file name specified = stdin
-    
-    To plot from stdin:
-    echo myfile.dat | ./plot_datafile.py
-    but you could pipe the output of any command with proper text format
-    
-    Add support for different scales for each channel as on scope"""
+#===========================================================
+#
+# This file is part of PyOscope
+#
+# plot_datafile2.py
+# 06-Sept-2011
+#
+# Copyright (c) 2011 Michael Hadmack (michael.hadmack@gmail.com)
+# This code is distributed under the MIT license
+#
+# Script to plot any number of oscilloscope data set files
+# No file name specified = stdin
+#    
+# To plot from stdin:
+# echo myfile.dat | ./plot_datafile.py
+# but you could pipe the output of any command with proper text format
+#    
+# Add support for different scales for each channel as on scope
+#
+#===========================================================
 import numpy
 import matplotlib.pyplot as pyplot
 import sys
